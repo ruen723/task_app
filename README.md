@@ -388,7 +388,8 @@ RenderはPostgreSQLを利用したRailsアプリのデプロイに適した選�
 
 ### 画面遷移図
 
-Figma:[画面遷移図](https://www.figma.com/make/tBwDps1ua6ZigLaQh4C6W5/task_app?fullscreen=1&t=AAXnSwMIbYYBLdFa-1&code-node-id=0-6)
+- [画面イメージ（Figma）](https://www.figma.com/make/tBwDps1ua6ZigLaQh4C6W5/task_app?fullscreen=1&t=AAXnSwMIbYYBLdFa-1&code-node-id=0-6)
+- [画面遷移図（Figma）](https://www.figma.com/design/ZWB3VYpo8DnPe2YjtouU51/%E7%84%A1%E9%A1%8C?node-id=3-2&m=dev)
 
 ### ER図
 
