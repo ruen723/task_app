@@ -195,6 +195,7 @@ https://play.google.com/store/apps/details?id=dev.bird.kidtimer
 - 利用可能時間を一つの枠として表示
 - タスクの合計時間が利用可能時間を超えた場合、ブロックが枠からはみ出す様子を表示
 - タスクの予定所要時間を調整することで、時間枠に収まる計画を立てられる仕組み
+- 登録したタスクの予定所要時間の合計を利用可能時間から差し引き、残り時間を「自由時間」として自動計算・表示する
 
 MVPでは、時間の大きさを視覚的に理解し、限られた時間の中で必要なタスクをどのように組み合わせるか、子ども自身が考えられることを重視します。
 
@@ -383,6 +384,13 @@ RenderはPostgreSQLを利用したRailsアプリのデプロイに適した選�
 
 ---
 
-## 画面遷移図・ER図
+## 11. 画面遷移図・ER図
 
-MVPで実装する機能に合わせて、画面遷移図とER図を作成し、READMEに追加する予定です。
+### 画面遷移図
+
+- [画面イメージ（Figma）](https://www.figma.com/make/tBwDps1ua6ZigLaQh4C6W5/task_app?fullscreen=1&t=AAXnSwMIbYYBLdFa-1&code-node-id=0-6)
+- [画面遷移図（Figma）](https://www.figma.com/design/ZWB3VYpo8DnPe2YjtouU51/%E7%84%A1%E9%A1%8C?node-id=3-2&m=dev)
+
+### ER図
+
+MVPで実装する機能に合わせて作成し、追加する予定です。
