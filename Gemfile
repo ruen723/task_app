@@ -8,3 +8,9 @@ gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
 gem "bootsnap", require: false
+
+group :development, :test do
+  gem "rubocop-rails-omakase", "~> 1.1", require: false
+  gem "brakeman", "~> 8.1", require: false
+  gem "bundler-audit", "~> 0.9.3", require: false
+end
