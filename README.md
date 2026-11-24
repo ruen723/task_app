@@ -393,4 +393,7 @@ RenderはPostgreSQLを利用したRailsアプリのデプロイに適した選�
 
 ### ER図
 
-MVPで実装する機能に合わせて作成し、追加する予定です。
+![ER図](docs/task_app_mvp_er_diagram.svg)
+
+- [ER図（Figma）](https://www.figma.com/make/gxHxIra9HufL9nk9Sbl2eX/%E5%AD%90%E3%81%A9%E3%82%82%E5%90%91%E3%81%91%E6%99%82%E9%96%93%E7%AE%A1%E7%90%86ER%E5%9B%B3?t=uEufvpV9XySuSZtw-20&fullscreen=1)
+
