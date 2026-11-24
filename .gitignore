@@ -15,3 +15,10 @@
 !/tmp/storage/.keep
 /storage/*
 !/storage/.keep
+
+# OSX
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
