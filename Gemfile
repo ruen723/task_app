@@ -10,7 +10,14 @@ gem "stimulus-rails"
 gem "bootsnap", require: false
 
 group :development, :test do
+  gem "factory_bot_rails"
+  gem "rspec-rails", "~> 8.1"
   gem "rubocop-rails-omakase", "~> 1.1", require: false
   gem "brakeman", "~> 8.1", require: false
   gem "bundler-audit", "~> 0.9.3", require: false
+end
+
+group :test do
+  gem "capybara"
+  gem "selenium-webdriver"
 end

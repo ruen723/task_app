@@ -14,6 +14,9 @@ FROM base AS development
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
       build-essential \
+      chromium \
+      chromium-driver \
+      chromium-sandbox \
       default-libmysqlclient-dev \
       pkg-config && \
     rm -rf /var/lib/apt/lists/*
