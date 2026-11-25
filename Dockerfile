@@ -9,7 +9,7 @@ RUN apt-get update -qq && \
 
 WORKDIR /rails
 
-COPY Gemfile ./
+COPY Gemfile Gemfile.lock ./
 
 RUN bundle install
 
