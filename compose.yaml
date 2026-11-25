@@ -19,7 +19,9 @@ services:
       start_period: 30s
 
   web:
-    build: .
+    build:
+      context: .
+      target: development
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails server -b 0.0.0.0"
     volumes:
       - .:/rails
