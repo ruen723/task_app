@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <title><%= content_for(:title) || "Task App" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -23,6 +23,18 @@
   </head>
 
   <body>
-    <%= yield %>
+    <header class="site-header">
+      <div class="site-container">
+        <%= link_to "時間管理アプリ", root_path %>
+      </div>
+    </header>
+
+    <main class="site-main site-container">
+      <%= yield %>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-container">時間管理アプリ</div>
+    </footer>
   </body>
 </html>
