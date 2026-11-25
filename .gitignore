@@ -1,0 +1,31 @@
+.env
+.env.*
+!.env.example
+# Ignore key files for decrypting credentials and more.
+*.key
+*.pem
+
+# Local development instructions
+/AGENTS.md
+/AGENTS.override.md
+
+# Rails runtime files
+/log/*
+!/log/.keep
+/tmp/*
+!/tmp/.keep
+!/tmp/pids/
+/tmp/pids/*
+!/tmp/pids/.keep
+!/tmp/storage/
+/tmp/storage/*
+!/tmp/storage/.keep
+/storage/*
+!/storage/.keep
+
+# OSX
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*

@@ -1,0 +1,23 @@
+.git
+.env
+.env.*
+**/.env
+**/.env.*
+**/*.key
+**/*.pem
+**/AGENTS.md
+**/AGENTS.override.md
+
+# Rails runtime files
+log/*
+!log/.keep
+tmp/*
+!tmp/.keep
+!tmp/pids/
+tmp/pids/*
+!tmp/pids/.keep
+!tmp/storage/
+tmp/storage/*
+!tmp/storage/.keep
+storage/*
+!storage/.keep
