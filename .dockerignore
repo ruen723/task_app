@@ -1,6 +1,12 @@
 .git
 .env
-config/*.key
+.env.*
+**/.env
+**/.env.*
+**/*.key
+**/*.pem
+**/AGENTS.md
+**/AGENTS.override.md
 
 # Rails runtime files
 log/*

@@ -1,6 +1,13 @@
 .env
+.env.*
+!.env.example
 # Ignore key files for decrypting credentials and more.
-/config/*.key
+*.key
+*.pem
+
+# Local development instructions
+/AGENTS.md
+/AGENTS.override.md
 
 # Rails runtime files
 /log/*
