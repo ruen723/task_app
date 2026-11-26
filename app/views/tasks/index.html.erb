@@ -1,6 +1,9 @@
 <% content_for :title, "タスク一覧" %>
 
 <h1>タスク一覧</h1>
+<% if flash[:alert] %>
+  <p role="alert"><%= flash[:alert] %></p>
+<% end %>
 <p><%= link_to "タスクを登録する", new_task_path %></p>
 
 <% if @tasks.empty? %>
@@ -8,7 +11,12 @@
 <% else %>
   <ol>
     <% @tasks.each do |task| %>
-      <li><%= task.name %>（<%= task.planned_duration %>分）</li>
+      <li>
+        <%= task.name %>（<%= task.planned_duration %>分）
+        <%= link_to "編集", edit_task_path(task) %>
+        <%= link_to "削除", task_path(task),
+          data: { turbo: true, turbo_method: :delete, turbo_confirm: "このタスクを削除しますか？" } %>
+      </li>
     <% end %>
   </ol>
 <% end %>
