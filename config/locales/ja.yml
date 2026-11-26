@@ -1,0 +1,17 @@
+ja:
+  activerecord:
+    attributes:
+      user:
+        username: ユーザー名
+        password: パスワード
+        password_confirmation: パスワード（確認）
+    errors:
+      models:
+        user:
+          attributes:
+            username:
+              taken: を使用できません
+            password:
+              password_too_long: は72バイト以内で入力してください
+            base:
+              registration_failed: 登録できませんでした。入力内容を確認してください。

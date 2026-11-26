@@ -1,6 +1,8 @@
 source "https://rubygems.org"
 
 gem "rails", "~> 8.1.4.1"
+gem "rails-i18n", "~> 8.1.0"
+gem "bcrypt", "~> 3.1.7"
 gem "mysql2", "~> 0.5"
 gem "puma", ">= 5.0"
 gem "propshaft"
