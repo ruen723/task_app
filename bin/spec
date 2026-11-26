@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+
+cd "$(dirname "$0")/.."
+uid="$(id -u)"
+if [ "$uid" -eq 0 ]; then
+  echo "Run bin/spec as a non-root user" >&2
+  exit 1
+fi
+
+exec docker compose run --rm --no-deps --pull never -T \
+  --user "$uid:$(id -g)" \
+  -e HOME=/tmp -e BOOTSNAP_CACHE_DIR=/tmp/bootsnap -e BUNDLE_FROZEN=true \
+  -e RAILS_ENV=test \
+  -e "SYSTEM_SPEC_CHROMIUM_NO_SANDBOX=${SYSTEM_SPEC_CHROMIUM_NO_SANDBOX:-0}" \
+  web sh -ec 'unset DATABASE_URL; exec bundle exec rspec "$@"' rspec "$@"

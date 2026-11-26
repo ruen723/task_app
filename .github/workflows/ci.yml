@@ -67,6 +67,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     services:
       mysql:
@@ -104,10 +105,14 @@ jobs:
           DATABASE_URL: mysql2://task_app:ci-only-task-app-password@127.0.0.1:3306/task_app_test
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test
+        run: |
+          bundle exec ruby spec/rails_helper.rb
+          bin/rails db:migrate
+          bundle exec rspec --exclude-pattern 'spec/system/**/*_spec.rb'
 
   system-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     services:
       mysql:
@@ -145,7 +150,16 @@ jobs:
           DATABASE_URL: mysql2://task_app:ci-only-task-app-password@127.0.0.1:3306/task_app_test
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test:system
+        run: |
+          export CHROME_BIN="$(command -v google-chrome)"
+          export CHROMEDRIVER_PATH="$(command -v chromedriver || printf '%s/chromedriver' "${CHROMEWEBDRIVER:?ChromeDriver is required}")"
+          test -x "$CHROME_BIN"
+          test -x "$CHROMEDRIVER_PATH"
+          "$CHROME_BIN" --version
+          "$CHROMEDRIVER_PATH" --version
+          bundle exec ruby spec/rails_helper.rb
+          bin/rails db:migrate
+          bundle exec rspec spec/system
 
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
