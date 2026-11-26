@@ -109,6 +109,110 @@ RSpec.describe "タスクの登録と一覧" do
     end
   end
 
+  context "実行順序の変更" do
+    let!(:first) { user.tasks.create!(name: "朝食", planned_duration: 10, position: 1) }
+    let!(:middle) { user.tasks.create!(name: "着替え", planned_duration: 5, position: 2) }
+    let!(:last) { user.tasks.create!(name: "歯磨き", planned_duration: 3, position: 3) }
+
+    def task_order
+      user.tasks.order(:position).pluck(:id, :position)
+    end
+
+    it "未認証では順序を変更できない" do
+      expect do
+        patch reorder_task_path(middle), params: { direction: "up" }
+      end.not_to change { task_order }
+      expect(response).to redirect_to(new_session_path)
+    end
+
+    context "ログイン済みの場合" do
+      before do
+        post session_path, params: { username: user.username, password: user.password }
+      end
+
+      it "上下に移動でき、順序は連番のままで別ユーザーのタスクに影響しない" do
+        other_task = FactoryBot.create(:user).tasks.create!(name: "読書", planned_duration: 5, position: 1)
+
+        patch reorder_task_path(middle), params: { direction: "up", position: 99, user_id: other_task.user_id }
+        expect(response).to have_http_status(:see_other)
+        expect(response).to redirect_to(tasks_path)
+        expect(task_order).to eq([ [ middle.id, 1 ], [ first.id, 2 ], [ last.id, 3 ] ])
+
+        patch reorder_task_path(middle), params: { direction: "down" }
+        expect(response).to have_http_status(:see_other)
+        expect(task_order).to eq([ [ first.id, 1 ], [ middle.id, 2 ], [ last.id, 3 ] ])
+        expect(other_task.reload).to have_attributes(name: "読書", planned_duration: 5, position: 1)
+      end
+
+      it "先頭と末尾の外へ移動せず、一覧に戻す" do
+        [ [ first, "up" ], [ last, "down" ] ].each do |task, direction|
+          expect do
+            patch reorder_task_path(task), params: { direction: direction }
+          end.not_to change { task_order }
+          expect(response).to have_http_status(:see_other)
+          expect(response).to redirect_to(tasks_path)
+        end
+      end
+
+      it "唯一のタスクはどちらにも移動できない" do
+        middle.destroy!
+        last.destroy!
+
+        %w[up down].each do |direction|
+          expect do
+            patch reorder_task_path(first), params: { direction: direction }
+          end.not_to change { task_order }
+          expect(response).to have_http_status(:see_other)
+          expect(response).to redirect_to(tasks_path)
+        end
+      end
+
+      it "方向の未指定・不正値・配列・ハッシュには400を返す" do
+        [ {}, { direction: "left" }, { direction: [ "up" ] }, { direction: { value: "up" } } ].each do |parameters|
+          expect do
+            patch reorder_task_path(middle), params: parameters
+          end.not_to change { task_order }
+          expect(response).to have_http_status(:bad_request)
+        end
+      end
+
+      it "他ユーザーまたは存在しないタスクには404を返す" do
+        other_task = FactoryBot.create(:user).tasks.create!(name: "読書", planned_duration: 5, position: 1)
+
+        [ other_task.id, 0 ].each do |id|
+          expect do
+            patch reorder_task_path(id), params: { direction: "down" }
+          end.not_to change { task_order }
+          expect(response).to have_http_status(:not_found)
+        end
+
+        expect(other_task.reload.position).to eq(1)
+      end
+
+      it "移動先に欠番がある場合は変更せず案内を表示する" do
+        middle.destroy!
+
+        expect do
+          patch reorder_task_path(first), params: { direction: "down" }
+        end.not_to change { task_order }
+        expect(response).to redirect_to(tasks_path)
+        follow_redirect!
+        expect(response.body).to include("タスクの順序を変更できませんでした。")
+      end
+
+      it "隣接タスクの保存に失敗した場合は退避した順位を元に戻す" do
+        first.update_column(:name, "")
+
+        expect do
+          patch reorder_task_path(middle), params: { direction: "up" }
+        end.not_to change { task_order }
+        expect(response).to redirect_to(tasks_path)
+        follow_redirect!
+        expect(response.body).to include("タスクの順序を変更できませんでした。")
+      end
+    end
+  end
+
   context "データベース制約" do
     let(:task_attributes) { { user_id: user.id, name: "朝食", planned_duration: 10, position: 1 } }
 
