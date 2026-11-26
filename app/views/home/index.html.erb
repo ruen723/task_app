@@ -8,9 +8,10 @@
   <div class="home-actions">
     <% if authenticated? %>
       <p>ログイン済み</p>
+      <%= button_to "ログアウト", session_path, method: :delete %>
     <% else %>
       <%= link_to "ユーザー登録", new_user_path %>
-      <button type="button" disabled>ログイン（準備中）</button>
+      <%= link_to "ログイン", new_session_path %>
     <% end %>
   </div>
 </section>
