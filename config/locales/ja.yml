@@ -5,6 +5,9 @@ ja:
       rate_limited: ログイン試行が多すぎます。時間をおいてからもう一度お試しください。
   activerecord:
     attributes:
+      task:
+        name: タスク名
+        planned_duration: 予定所要時間
       user:
         username: ユーザー名
         password: パスワード
