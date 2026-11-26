@@ -1,1 +1,2 @@
-# The application currently has no JavaScript entry point or package pins.
+pin "application"
+pin "@hotwired/turbo-rails", to: "turbo.min.js"
