@@ -3,6 +3,20 @@ require "rails_helper"
 RSpec.describe "タスクの登録と一覧" do
   let(:user) { FactoryBot.create(:user) }
 
+  it "未認証では編集・更新・削除できない" do
+    task = user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
+
+    get edit_task_path(task)
+    expect(response).to redirect_to(new_session_path)
+
+    patch task_path(task), params: { task: { name: "着替え" } }
+    expect(response).to redirect_to(new_session_path)
+    expect(task.reload.name).to eq("朝食")
+
+    expect { delete task_path(task) }.not_to change(Task, :count)
+    expect(response).to redirect_to(new_session_path)
+  end
+
   it "未認証では一覧・登録画面・登録処理にアクセスできない" do
     get tasks_path
     expect(response).to redirect_to(new_session_path)
@@ -114,6 +128,101 @@ RSpec.describe "タスクの登録と一覧" do
       expect do
         Task.insert_all!([ task_attributes.merge(user_id: User.maximum(:id) + 1) ])
       end.to raise_error(ActiveRecord::InvalidForeignKey)
+    end
+  end
+
+  context "ログイン後の編集・削除" do
+    before do
+      post session_path, params: { username: user.username, password: user.password }
+    end
+
+    it "他ユーザーのタスクには編集・更新・削除のいずれでも404を返す" do
+      other_user = FactoryBot.create(:user)
+      task = other_user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
+
+      get edit_task_path(task)
+      expect(response).to have_http_status(:not_found)
+
+      patch task_path(task), params: { task: { name: "着替え" } }
+      expect(response).to have_http_status(:not_found)
+
+      expect { delete task_path(task) }.not_to change(Task, :count)
+      expect(response).to have_http_status(:not_found)
+      expect(task.reload.name).to eq("朝食")
+    end
+
+    it "存在しないタスクには編集・更新・削除のいずれでも404を返す" do
+      missing_id = 0
+
+      get edit_task_path(missing_id)
+      expect(response).to have_http_status(:not_found)
+
+      patch task_path(missing_id), params: { task: { name: "着替え" } }
+      expect(response).to have_http_status(:not_found)
+
+      delete task_path(missing_id)
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "現在の内容を編集画面に表示し、所有者と順序を維持して内容を更新する" do
+      task = user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
+      other_user = FactoryBot.create(:user)
+
+      get edit_task_path(task)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("タスク編集", "朝食")
+
+      patch task_path(task), params: {
+        task: { name: "着替え", planned_duration: "20", user_id: other_user.id, position: 5 }
+      }
+
+      expect(response).to have_http_status(:see_other)
+      expect(response).to redirect_to(tasks_path)
+      expect(task.reload).to have_attributes(name: "着替え", planned_duration: 20, user_id: user.id, position: 1)
+    end
+
+    it "入力が不正なら保存せず、日本語のエラーと編集フォームを表示する" do
+      task = user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
+
+      patch task_path(task), params: { task: { name: "", planned_duration: "3.5" } }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("タスク編集", "入力内容を確認してください。", "整数")
+      expect(task.reload).to have_attributes(name: "朝食", planned_duration: 10)
+    end
+
+    { "先頭" => [ 3, 1 ], "途中" => [ 3, 2 ], "末尾" => [ 3, 3 ], "唯一" => [ 1, 1 ] }.each do |label, (count, removed_position)|
+      it "#{label}のタスクを削除し、残ったタスクの順番と別ユーザーのデータを維持する" do
+        tasks = (1..count).map do |position|
+          user.tasks.create!(name: "タスク#{position}", planned_duration: 10, position: position)
+        end
+        removed_task = tasks.fetch(removed_position - 1)
+        other_user = FactoryBot.create(:user)
+        other_task = other_user.tasks.create!(name: "別のタスク", planned_duration: 5, position: 1)
+
+        expect { delete task_path(removed_task) }.to change(Task, :count).by(-1)
+
+        expect(response).to have_http_status(:see_other)
+        expect(response).to redirect_to(tasks_path)
+        expect(user.tasks.order(:position).pluck(:id, :position))
+          .to eq((tasks - [ removed_task ]).map.with_index(1) { |task, position| [ task.id, position ] })
+        expect(other_task.reload).to have_attributes(position: 1, name: "別のタスク")
+      end
+    end
+
+    it "順序調整の途中で保存に失敗すると、削除と先に行った繰り上げを取り消す" do
+      first = user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
+      second = user.tasks.create!(name: "着替え", planned_duration: 5, position: 2)
+      third = user.tasks.create!(name: "歯磨き", planned_duration: 3, position: 3)
+      # 3件目だけ保存に失敗するよう、バリデーションを経由せずテストデータを作る。
+      third.update_column(:name, "")
+
+      expect { delete task_path(first) }.not_to change(Task, :count)
+
+      expect(response).to redirect_to(tasks_path)
+      expect(user.tasks.order(:position).pluck(:id, :position)).to eq([ [ first.id, 1 ], [ second.id, 2 ], [ third.id, 3 ] ])
+      follow_redirect!
+      expect(response.body).to include("タスクを削除できませんでした。")
     end
   end
 end
