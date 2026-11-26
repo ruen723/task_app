@@ -10,9 +10,13 @@
   <p>タスクはまだありません。</p>
 <% else %>
   <ol>
-    <% @tasks.each do |task| %>
+    <% @tasks.each_with_index do |task, index| %>
       <li>
         <%= task.name %>（<%= task.planned_duration %>分）
+        <%= button_to "上へ", reorder_task_path(task), method: :patch,
+          params: { direction: "up" }, disabled: index.zero? %>
+        <%= button_to "下へ", reorder_task_path(task), method: :patch,
+          params: { direction: "down" }, disabled: index == @tasks.length - 1 %>
         <%= link_to "編集", edit_task_path(task) %>
         <%= link_to "削除", task_path(task),
           data: { turbo: true, turbo_method: :delete, turbo_confirm: "このタスクを削除しますか？" } %>
