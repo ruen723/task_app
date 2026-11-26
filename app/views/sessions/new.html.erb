@@ -1,0 +1,24 @@
+<% content_for :title, "ログイン" %>
+
+<h1>ログイン</h1>
+<p>MVPではパスワードを再設定できません。</p>
+
+<% if flash[:alert].present? %>
+  <p role="alert"><%= flash[:alert] %></p>
+<% end %>
+
+<%= form_with url: session_path do |form| %>
+  <p>
+    <%= form.label :username, "ユーザー名" %><br>
+    <%= form.text_field :username, value: @username, required: true, autocomplete: "username",
+      aria: { describedby: "username-hint" } %><br>
+    <small id="username-hint">ユーザー名の大文字と小文字は区別します。</small>
+  </p>
+
+  <p>
+    <%= form.label :password, "パスワード" %><br>
+    <%= form.password_field :password, required: true, autocomplete: "current-password" %>
+  </p>
+
+  <%= form.submit "ログイン" %>
+<% end %>

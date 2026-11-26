@@ -1,4 +1,8 @@
 ja:
+  sessions:
+    errors:
+      invalid_credentials: ユーザー名またはパスワードが正しくありません。
+      rate_limited: ログイン試行が多すぎます。時間をおいてからもう一度お試しください。
   activerecord:
     attributes:
       user:
