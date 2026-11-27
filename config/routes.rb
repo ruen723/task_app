@@ -11,4 +11,11 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "home#index"
+  resources :users, only: %i[new create]
+  resource :session, only: %i[new create destroy]
+  resource :schedule_setting, only: %i[edit create update]
+  resource :dashboard, only: :show
+  resources :tasks, only: %i[new create edit update destroy] do
+    patch :reorder, on: :member
+  end
 end

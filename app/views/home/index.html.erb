@@ -6,7 +6,12 @@
   <p>限られた時間の中で自分で計画を立て、時間を主体的に使う力を育てるためのアプリです。</p>
 
   <div class="home-actions">
-    <button type="button" disabled>ユーザー登録（準備中）</button>
-    <button type="button" disabled>ログイン（準備中）</button>
+    <% if authenticated? %>
+      <p>ログイン済み</p>
+      <%= link_to "ダッシュボード", dashboard_path %>
+    <% else %>
+      <%= link_to "ユーザー登録", new_user_path %>
+      <%= link_to "ログイン", new_session_path %>
+    <% end %>
   </div>
 </section>

@@ -1,0 +1,12 @@
+<% content_for :title, "タスク編集" %>
+
+<h1>タスク編集</h1>
+
+<%= render "form", task: @task, submit_label: "更新する" %>
+
+<p>
+  <%= link_to "削除", task_path(@task),
+    data: { turbo: true, turbo_method: :delete, turbo_confirm: "このタスクを削除しますか？" } %>
+</p>
+
+<p><%= link_to "キャンセルしてダッシュボードへ戻る", dashboard_path %></p>

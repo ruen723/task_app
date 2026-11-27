@@ -1,0 +1,44 @@
+<% content_for :title, "ダッシュボード" %>
+
+<h1>ダッシュボード</h1>
+<% if flash[:alert] %>
+  <p role="alert"><%= flash[:alert] %></p>
+<% end %>
+<p><%= link_to "タスクを登録する", new_task_path %></p>
+<% if @schedule_setting %>
+  <p><%= link_to "時間枠を変更する", edit_schedule_setting_path %></p>
+<% else %>
+  <p>時間枠が未設定です。<%= link_to "時間枠を設定する", edit_schedule_setting_path %></p>
+<% end %>
+
+<dl>
+  <dt>予定合計時間</dt>
+  <dd><%= @total_planned_minutes %>分</dd>
+  <% if @time_breakdown %>
+    <dt>利用可能時間</dt>
+    <dd><%= @time_breakdown.fetch(:available_minutes) %>分</dd>
+    <dt>自由時間</dt>
+    <dd><%= @time_breakdown.fetch(:free_minutes) %>分</dd>
+    <dt>超過時間</dt>
+    <dd><%= @time_breakdown.fetch(:overflow_minutes) %>分</dd>
+  <% end %>
+</dl>
+
+<% if @tasks.empty? %>
+  <p>タスクはまだありません。</p>
+<% else %>
+  <ol>
+    <% @tasks.each_with_index do |task, index| %>
+      <li>
+        <%= task.name %>（<%= task.planned_duration %>分）
+        <%= button_to "上へ", reorder_task_path(task), method: :patch,
+          params: { direction: "up" }, disabled: index.zero? %>
+        <%= button_to "下へ", reorder_task_path(task), method: :patch,
+          params: { direction: "down" }, disabled: index == @tasks.length - 1 %>
+        <%= link_to "編集", edit_task_path(task) %>
+      </li>
+    <% end %>
+  </ol>
+<% end %>
+
+<%= button_to "ログアウト", session_path, method: :delete %>

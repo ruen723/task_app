@@ -1,0 +1,7 @@
+<% content_for :title, "タスク登録" %>
+
+<h1>タスク登録</h1>
+
+<%= render "form", task: @task, submit_label: "登録する" %>
+
+<p><%= link_to "キャンセルしてダッシュボードへ戻る", dashboard_path %></p>
