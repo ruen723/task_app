@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "タスクの登録と一覧" do
+RSpec.describe "タスク管理" do
   let(:user) { FactoryBot.create(:user) }
 
   it "未認証では編集・更新・削除できない" do
@@ -17,10 +17,7 @@ RSpec.describe "タスクの登録と一覧" do
     expect(response).to redirect_to(new_session_path)
   end
 
-  it "未認証では一覧・登録画面・登録処理にアクセスできない" do
-    get tasks_path
-    expect(response).to redirect_to(new_session_path)
-
+  it "未認証では登録画面・登録処理にアクセスできない" do
     get new_task_path
     expect(response).to redirect_to(new_session_path)
 
@@ -33,16 +30,10 @@ RSpec.describe "タスクの登録と一覧" do
   context "ログイン済みの場合" do
     before do
       post session_path, params: { username: user.username, password: user.password }
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
     end
 
-    it "TOPから登録画面に進み、タスクが0件の場合は案内を表示する" do
-      get root_path
-      expect(response.body).to include(tasks_path)
-
-      get tasks_path
-      expect(response.body).to include("タスクはまだありません。", new_task_path)
-
+    it "登録画面に入力項目を表示する" do
       get new_task_path
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("タスク名", "予定所要時間")
@@ -60,24 +51,12 @@ RSpec.describe "タスクの登録と一覧" do
         end.to change { user.tasks.count }.by(1)
 
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(tasks_path)
+        expect(response).to redirect_to(dashboard_path)
       end
 
       expect(user.tasks.order(:position).pluck(:name, :planned_duration, :position))
         .to eq([ [ "朝食", 1, 1 ], [ "朝食", 1440, 2 ] ])
       expect(other_user.tasks.count).to eq(1)
-    end
-
-    it "自分のタスクだけを実行順序で表示する" do
-      user.tasks.create!(name: "着替え", planned_duration: 5, position: 2)
-      user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
-      FactoryBot.create(:user).tasks.create!(name: "他人のタスク", planned_duration: 5, position: 1)
-
-      get tasks_path
-
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to match(/朝食.*10分.*着替え.*5分/m)
-      expect(response.body).not_to include("他人のタスク")
     end
 
     [ "", "0", "1441", "3.5", "3.0", "3abc", "abc" ].each do |duration|
@@ -135,7 +114,7 @@ RSpec.describe "タスクの登録と一覧" do
 
         patch reorder_task_path(middle), params: { direction: "up", position: 99, user_id: other_task.user_id }
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(tasks_path)
+        expect(response).to redirect_to(dashboard_path)
         expect(task_order).to eq([ [ middle.id, 1 ], [ first.id, 2 ], [ last.id, 3 ] ])
 
         patch reorder_task_path(middle), params: { direction: "down" }
@@ -150,7 +129,7 @@ RSpec.describe "タスクの登録と一覧" do
             patch reorder_task_path(task), params: { direction: direction }
           end.not_to change { task_order }
           expect(response).to have_http_status(:see_other)
-          expect(response).to redirect_to(tasks_path)
+          expect(response).to redirect_to(dashboard_path)
         end
       end
 
@@ -163,7 +142,7 @@ RSpec.describe "タスクの登録と一覧" do
             patch reorder_task_path(first), params: { direction: direction }
           end.not_to change { task_order }
           expect(response).to have_http_status(:see_other)
-          expect(response).to redirect_to(tasks_path)
+          expect(response).to redirect_to(dashboard_path)
         end
       end
 
@@ -195,7 +174,7 @@ RSpec.describe "タスクの登録と一覧" do
         expect do
           patch reorder_task_path(first), params: { direction: "down" }
         end.not_to change { task_order }
-        expect(response).to redirect_to(tasks_path)
+        expect(response).to redirect_to(dashboard_path)
         follow_redirect!
         expect(response.body).to include("タスクの順序を変更できませんでした。")
       end
@@ -206,7 +185,7 @@ RSpec.describe "タスクの登録と一覧" do
         expect do
           patch reorder_task_path(middle), params: { direction: "up" }
         end.not_to change { task_order }
-        expect(response).to redirect_to(tasks_path)
+        expect(response).to redirect_to(dashboard_path)
         follow_redirect!
         expect(response.body).to include("タスクの順序を変更できませんでした。")
       end
@@ -281,7 +260,7 @@ RSpec.describe "タスクの登録と一覧" do
       }
 
       expect(response).to have_http_status(:see_other)
-      expect(response).to redirect_to(tasks_path)
+      expect(response).to redirect_to(dashboard_path)
       expect(task.reload).to have_attributes(name: "着替え", planned_duration: 20, user_id: user.id, position: 1)
     end
 
@@ -307,7 +286,7 @@ RSpec.describe "タスクの登録と一覧" do
         expect { delete task_path(removed_task) }.to change(Task, :count).by(-1)
 
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(tasks_path)
+        expect(response).to redirect_to(dashboard_path)
         expect(user.tasks.order(:position).pluck(:id, :position))
           .to eq((tasks - [ removed_task ]).map.with_index(1) { |task, position| [ task.id, position ] })
         expect(other_task.reload).to have_attributes(position: 1, name: "別のタスク")
@@ -323,7 +302,7 @@ RSpec.describe "タスクの登録と一覧" do
 
       expect { delete task_path(first) }.not_to change(Task, :count)
 
-      expect(response).to redirect_to(tasks_path)
+      expect(response).to redirect_to(dashboard_path)
       expect(user.tasks.order(:position).pluck(:id, :position)).to eq([ [ first.id, 1 ], [ second.id, 2 ], [ third.id, 3 ] ])
       follow_redirect!
       expect(response.body).to include("タスクを削除できませんでした。")
