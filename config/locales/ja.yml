@@ -1,10 +1,16 @@
 ja:
+  schedule_settings:
+    errors:
+      conflict: 時間枠を保存できませんでした。表示された設定を確認してから、もう一度お試しください。
   sessions:
     errors:
       invalid_credentials: ユーザー名またはパスワードが正しくありません。
       rate_limited: ログイン試行が多すぎます。時間をおいてからもう一度お試しください。
   activerecord:
     attributes:
+      schedule_setting:
+        start_time: 開始時刻
+        end_time: 終了時刻
       task:
         name: タスク名
         planned_duration: 予定所要時間
@@ -14,6 +20,13 @@ ja:
         password_confirmation: パスワード（確認）
     errors:
       models:
+        schedule_setting:
+          attributes:
+            start_time:
+              invalid_clock_time: は分単位の有効な時刻を入力してください
+            end_time:
+              invalid_clock_time: は分単位の有効な時刻を入力してください
+              after_start_time: は開始時刻より後に設定してください
         user:
           attributes:
             username:

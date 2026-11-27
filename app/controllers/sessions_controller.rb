@@ -17,7 +17,7 @@ class SessionsController < ApplicationController
     if @username && password.is_a?(String) && password.bytesize <= 72 &&
         (user = User.authenticate_by(username: @username, password: password))
       set_current_session(create_session_for(user))
-      redirect_to root_path, status: :see_other
+      redirect_to dashboard_path, status: :see_other
     else
       render_login_error(:invalid_credentials, :unprocessable_content)
     end
@@ -25,13 +25,13 @@ class SessionsController < ApplicationController
 
   def destroy
     terminate_session
-    redirect_to root_path, status: :see_other
+    redirect_to new_session_path, status: :see_other
   end
 
   private
 
   def redirect_if_authenticated
-    redirect_to root_path, status: :see_other if authenticated?
+    redirect_to dashboard_path, status: :see_other if authenticated?
   end
 
   def render_login_error(message, status)

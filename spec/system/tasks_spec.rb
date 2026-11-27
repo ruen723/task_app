@@ -4,12 +4,12 @@ RSpec.describe "タスクの編集と削除" do
   let(:user) { FactoryBot.create(:user) }
 
   it "編集後に削除をキャンセルでき、確認に同意した場合だけ削除する" do
-    user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
+    task = user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
     visit new_session_path
     fill_in "ユーザー名", with: user.username
     fill_in "パスワード", with: user.password
     click_button "ログイン"
-    click_link "タスク一覧"
+    expect(page).to have_current_path(dashboard_path)
 
     click_link "編集"
     fill_in "タスク名", with: "着替え"
@@ -17,11 +17,41 @@ RSpec.describe "タスクの編集と削除" do
     click_button "更新する"
     expect(page).to have_text("着替え（15分）")
 
+    click_link "編集"
     dismiss_confirm("このタスクを削除しますか？") { click_link "削除" }
-    expect(page).to have_text("着替え（15分）")
+    expect(page).to have_current_path(edit_task_path(task))
+    expect(task.reload).to have_attributes(name: "着替え", planned_duration: 15)
 
     accept_confirm("このタスクを削除しますか？") { click_link "削除" }
+    expect(page).to have_current_path(dashboard_path)
     expect(page).to have_text("タスクはまだありません。")
+  end
+
+  it "各フォームをキャンセルすると変更を保存せずダッシュボードへ戻る" do
+    task = user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
+    visit new_session_path
+    fill_in "ユーザー名", with: user.username
+    fill_in "パスワード", with: user.password
+    click_button "ログイン"
+    expect(page).to have_current_path(dashboard_path)
+
+    click_link "タスクを登録する"
+    fill_in "タスク名", with: "着替え"
+    click_link "キャンセルしてダッシュボードへ戻る"
+    expect(page).to have_current_path(dashboard_path)
+    expect(user.tasks.count).to eq(1)
+
+    click_link "編集"
+    fill_in "タスク名", with: "歯磨き"
+    click_link "キャンセルしてダッシュボードへ戻る"
+    expect(page).to have_current_path(dashboard_path)
+    expect(task.reload.name).to eq("朝食")
+
+    click_link "時間枠を設定する"
+    expect(page).to have_current_path(edit_schedule_setting_path)
+    click_link "キャンセルしてダッシュボードへ戻る"
+    expect(page).to have_current_path(dashboard_path)
+    expect(user.reload.schedule_setting).to be_nil
   end
 
   it "上下ボタンで順序を変え、端のボタンを無効にし、再読み込み後も順序を維持する" do
@@ -31,7 +61,7 @@ RSpec.describe "タスクの編集と削除" do
     fill_in "ユーザー名", with: user.username
     fill_in "パスワード", with: user.password
     click_button "ログイン"
-    click_link "タスク一覧"
+    expect(page).to have_current_path(dashboard_path)
 
     within("li", text: "朝食") do
       expect(page).to have_button("上へ", disabled: true)
@@ -57,8 +87,9 @@ RSpec.describe "タスクの編集と削除" do
     fill_in "ユーザー名", with: user.username
     fill_in "パスワード", with: user.password
     click_button "ログイン"
-    click_link "タスク一覧"
+    expect(page).to have_current_path(dashboard_path)
 
+    click_link "編集"
     expect { click_link "削除" }.not_to change(Task, :count)
     expect(page).to have_current_path(task_path(task))
     expect(task.reload.name).to eq("朝食")
@@ -78,9 +109,9 @@ RSpec.describe "タスクの編集と削除" do
     fill_in "パスワード", exact: true, with: password
     fill_in "パスワード（確認）", with: password
     click_button "登録する"
-    expect(page).to have_text("ログイン済み")
+    expect(page).to have_current_path(dashboard_path)
     click_button "ログアウト"
-    click_link "ログイン"
+    expect(page).to have_current_path(new_session_path)
 
     fill_in "ユーザー名", with: "morning_routine"
     fill_in "パスワード", with: "wrong-password"
@@ -89,7 +120,7 @@ RSpec.describe "タスクの編集と削除" do
 
     fill_in "パスワード", with: password
     click_button "ログイン"
-    click_link "タスク一覧"
+    expect(page).to have_current_path(dashboard_path)
     click_link "タスクを登録する"
     fill_in "タスク名", with: " "
     fill_in "予定所要時間", with: 10

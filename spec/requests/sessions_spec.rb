@@ -24,10 +24,10 @@ RSpec.describe "ログインとログアウト" do
     expect { post session_path, params: login_params }.to change(Session, :count).by(1)
     expect(Session.last.user).to eq(user)
     expect(response.cookies["session_id"]).to be_present
-    expect(response).to redirect_to(root_path)
+    expect(response).to redirect_to(dashboard_path)
 
     follow_redirect!
-    expect(response.body).to include("ログイン済み", "ログアウト")
+    expect(response.body).to include("ダッシュボード", "ログアウト")
   end
 
   {
@@ -59,15 +59,15 @@ RSpec.describe "ログインとログアウト" do
     expect(response.body).to include("ユーザー名またはパスワードが正しくありません。")
   end
 
-  it "認証済みのログイン要求では同じセッションを維持してTOPへ戻す" do
+  it "認証済みのログイン要求では同じセッションを維持してダッシュボードへ戻す" do
     post session_path, params: credentials
     original_cookie = cookies["session_id"]
 
     get new_session_path
-    expect(response).to redirect_to(root_path)
+    expect(response).to redirect_to(dashboard_path)
 
     expect { post session_path, params: credentials }.not_to change(Session, :count)
-    expect(response).to redirect_to(root_path)
+    expect(response).to redirect_to(dashboard_path)
     expect(cookies["session_id"]).to eq(original_cookie)
   end
 
@@ -79,14 +79,17 @@ RSpec.describe "ログインとログアウト" do
 
     delete session_path
 
-    expect(response).to redirect_to(root_path)
+    expect(response).to redirect_to(new_session_path)
     expect(Session.exists?(current_session.id)).to be(false)
     expect(Session.exists?(other_session.id)).to be(true)
     expect(cookies["session_id"]).to be_blank
 
-    cookies["session_id"] = old_cookie
     follow_redirect!
-    expect(response.body).not_to include("ログイン済み")
+    expect(response).to have_http_status(:ok)
+
+    cookies["session_id"] = old_cookie
+    get dashboard_path
+    expect(response).to redirect_to(new_session_path)
   end
 
   it "未認証のログアウト要求をログイン画面へ案内する" do
@@ -117,7 +120,7 @@ RSpec.describe "ログインとログアウト" do
 
       travel 3.minutes + 1.second
       post session_path, params: credentials
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
     end
   end
 end

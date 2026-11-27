@@ -14,7 +14,7 @@ class UsersController < ApplicationController
 
     if session
       set_current_session(session)
-      redirect_to root_path, status: :see_other
+      redirect_to dashboard_path, status: :see_other
     else
       render :new, status: :unprocessable_content
     end

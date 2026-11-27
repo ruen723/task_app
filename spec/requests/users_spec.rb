@@ -24,19 +24,20 @@ RSpec.describe "ユーザー登録" do
     expect(user.authenticate(password)).to eq(user)
     expect(user.sessions.count).to eq(1)
     expect(response.cookies["session_id"]).to be_present
-    expect(response).to redirect_to(root_path)
+    expect(response).to redirect_to(dashboard_path)
 
     follow_redirect!
-    expect(response.body).to include("ログイン済み")
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("ダッシュボード")
 
     cookies["session_id"] = "#{cookies["session_id"]}tampered"
-    get root_path
-    expect(response.body).not_to include("ログイン済み")
+    get dashboard_path
+    expect(response).to redirect_to(new_session_path)
   end
 
   it "同じユーザー名を拒否し、大文字小文字が異なる名前を許可する" do
     post users_path, params: { user: attributes }
-    expect(response).to redirect_to(root_path)
+    expect(response).to redirect_to(dashboard_path)
 
     expect { post users_path, params: { user: attributes } }
       .not_to change(User, :count)
@@ -45,7 +46,7 @@ RSpec.describe "ユーザー登録" do
 
     expect { post users_path, params: { user: attributes.merge(username: "morning_user") } }
       .to change(User, :count).by(1)
-    expect(response).to redirect_to(root_path)
+    expect(response).to redirect_to(dashboard_path)
   end
 
   it "DBが重複を拒否した場合、ユーザーとセッションを増やさず一般的なエラーを表示する" do
@@ -100,7 +101,7 @@ RSpec.describe "ユーザー登録" do
         user: attributes.merge(password: password_at_limit, password_confirmation: password_at_limit)
       }
 
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
       user = User.find_by!(username: "Morning_User")
       expect(user.authenticate(password_at_limit)).to eq(user)
       expect(user.authenticate(password_at_limit.strip)).to be(false)
