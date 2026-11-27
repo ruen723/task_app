@@ -19,6 +19,7 @@ if $PROGRAM_NAME != __FILE__
   require "spec_helper"
   require "rspec/rails"
   require_relative "support/system_browser"
+  require_relative "support/capybara_chrome158_workaround"
 
   ActiveRecord::Migration.check_all_pending!
 

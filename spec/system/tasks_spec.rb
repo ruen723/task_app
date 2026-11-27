@@ -24,6 +24,31 @@ RSpec.describe "タスクの編集と削除" do
     expect(page).to have_text("タスクはまだありません。")
   end
 
+  it "上下ボタンで順序を変え、端のボタンを無効にし、再読み込み後も順序を維持する" do
+    user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
+    user.tasks.create!(name: "着替え", planned_duration: 5, position: 2)
+    visit new_session_path
+    fill_in "ユーザー名", with: user.username
+    fill_in "パスワード", with: user.password
+    click_button "ログイン"
+    click_link "タスク一覧"
+
+    within("li", text: "朝食") do
+      expect(page).to have_button("上へ", disabled: true)
+      click_button "下へ"
+    end
+    expect(page).to have_selector("ol li:first-child", text: "着替え")
+    refresh
+    expect(page).to have_selector("ol li:first-child", text: "着替え")
+    within("li", text: "朝食") do
+      expect(page).to have_button("下へ", disabled: true)
+      click_button "上へ"
+    end
+    expect(page).to have_selector("ol li:first-child", text: "朝食")
+    refresh
+    expect(page).to have_selector("ol li:first-child", text: "朝食")
+  end
+
   it "JavaScriptを実行しないブラウザでは、削除リンクを開いても削除されない" do
     task = user.tasks.create!(name: "朝食", planned_duration: 10, position: 1)
     browser = page.driver.browser
