@@ -4,6 +4,39 @@ RSpec.describe ScheduleSetting do
   let(:user) { FactoryBot.create(:user) }
   let(:setting) { user.build_schedule_setting(start_time: "07:05", end_time: "08:10") }
 
+  describe "#available_minutes" do
+    it "最小時間枠を1分として計算する" do
+      setting.assign_attributes(start_time: "07:59", end_time: "08:00")
+
+      expect(setting.available_minutes).to eq(1)
+    end
+
+    it "最大時間枠を1439分として計算する" do
+      setting.assign_attributes(start_time: "00:00", end_time: "23:59")
+
+      expect(setting.available_minutes).to eq(1439)
+    end
+  end
+
+  describe "#time_breakdown" do
+    {
+      "余裕がある" => [ 45, 15, 0 ],
+      "完全に一致する" => [ 60, 0, 0 ],
+      "超過する" => [ 75, 0, 15 ],
+      "1分だけ余る" => [ 59, 1, 0 ],
+      "1分だけ超過する" => [ 61, 0, 1 ],
+      "タスクがない" => [ 0, 60, 0 ]
+    }.each do |description, (total_planned_minutes, free_minutes, overflow_minutes)|
+      it "#{description}場合に利用可能時間・自由時間・超過時間を分で返す" do
+        setting.assign_attributes(start_time: "07:00", end_time: "08:00")
+
+        expect(setting.time_breakdown(total_planned_minutes)).to eq(
+          available_minutes: 60, free_minutes: free_minutes, overflow_minutes: overflow_minutes
+        )
+      end
+    end
+  end
+
   it "分単位の時刻を保存・再取得・再検証し、片方の時刻も更新できる" do
     setting.save!
     setting.reload
