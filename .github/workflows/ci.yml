@@ -168,7 +168,7 @@ jobs:
           chrome_version="$("$CHROME_BIN" --version)"
           driver_version="$("$CHROMEDRIVER_PATH" --version)"
           printf '%s\n' "$chrome_version" "$driver_version"
-          if [[ "${chrome_version##* }" != "$version" || "$(awk '{print $2}' <<< "$driver_version")" != "$version" ]]; then
+          if [[ "$(awk '{print $NF}' <<< "$chrome_version")" != "$version" || "$(awk '{print $2}' <<< "$driver_version")" != "$version" ]]; then
             echo "Expected Chrome and ChromeDriver $version" >&2
             exit 1
           fi
