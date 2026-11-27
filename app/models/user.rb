@@ -2,6 +2,7 @@ class User < ApplicationRecord
   has_secure_password reset_token: false
   has_many :sessions, dependent: :destroy
   has_many :tasks, dependent: :destroy
+  has_one :schedule_setting, dependent: :destroy
 
   normalizes :username, with: ->(username) { username.strip }
 
