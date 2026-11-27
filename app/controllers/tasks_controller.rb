@@ -1,8 +1,4 @@
 class TasksController < ApplicationController
-  def index
-    @tasks = Current.user.tasks.order(:position)
-  end
-
   def new
     @task = Current.user.tasks.build
   end
@@ -16,7 +12,7 @@ class TasksController < ApplicationController
     end
 
     if saved
-      redirect_to tasks_path, status: :see_other
+      redirect_to dashboard_path, status: :see_other
     else
       render :new, status: :unprocessable_content
     end
@@ -34,7 +30,7 @@ class TasksController < ApplicationController
     end
 
     if saved
-      redirect_to tasks_path, status: :see_other
+      redirect_to dashboard_path, status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
@@ -53,9 +49,9 @@ class TasksController < ApplicationController
       end
     end
 
-    redirect_to tasks_path, status: :see_other
+    redirect_to dashboard_path, status: :see_other
   rescue ActiveRecord::RecordNotDestroyed, ActiveRecord::RecordInvalid
-    redirect_to tasks_path, status: :see_other, alert: "タスクを削除できませんでした。"
+    redirect_to dashboard_path, status: :see_other, alert: "タスクを削除できませんでした。"
   end
 
   def reorder
@@ -81,9 +77,9 @@ class TasksController < ApplicationController
     end
 
     flash[:alert] = "タスクの順序を変更できませんでした。" unless reordered
-    redirect_to tasks_path, status: :see_other
+    redirect_to dashboard_path, status: :see_other
   rescue ActiveRecord::RecordInvalid
-    redirect_to tasks_path, status: :see_other, alert: "タスクの順序を変更できませんでした。"
+    redirect_to dashboard_path, status: :see_other, alert: "タスクの順序を変更できませんでした。"
   end
 
   private
