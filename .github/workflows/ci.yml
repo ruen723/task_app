@@ -151,27 +151,12 @@ jobs:
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
         run: |
-          # Chrome 158とCapybara 3.40.0の互換性問題を回避するため、一時的にバージョンを固定する。
-          # 正式な修正版を適用し、最新のChromeでシステムテストが全件成功した後に固定を解除する。
-          # (https://github.com/teamcapybara/capybara/issues/2865).
-          version=157.0.8103.78
-          download_dir="$(mktemp -d "$RUNNER_TEMP/chrome-for-testing.XXXXXX")"
-          base_url="https://storage.googleapis.com/chrome-for-testing-public/$version/linux64"
-          for asset in chrome chromedriver; do
-            archive="$asset-linux64.zip"
-            curl --fail --silent --show-error --location --max-time 120 \
-              --output "$download_dir/$archive" "$base_url/$archive"
-            unzip -q "$download_dir/$archive" -d "$download_dir"
-          done
-          export CHROME_BIN="$download_dir/chrome-linux64/chrome"
-          export CHROMEDRIVER_PATH="$download_dir/chromedriver-linux64/chromedriver"
-          chrome_version="$("$CHROME_BIN" --version)"
-          driver_version="$("$CHROMEDRIVER_PATH" --version)"
-          printf '%s\n' "$chrome_version" "$driver_version"
-          if [[ "$(awk '{print $NF}' <<< "$chrome_version")" != "$version" || "$(awk '{print $2}' <<< "$driver_version")" != "$version" ]]; then
-            echo "Expected Chrome and ChromeDriver $version" >&2
-            exit 1
-          fi
+          export CHROME_BIN="$(command -v google-chrome)"
+          export CHROMEDRIVER_PATH="$(command -v chromedriver || printf '%s/chromedriver' "${CHROMEWEBDRIVER:?ChromeDriver is required}")"
+          test -x "$CHROME_BIN"
+          test -x "$CHROMEDRIVER_PATH"
+          "$CHROME_BIN" --version
+          "$CHROMEDRIVER_PATH" --version
           bundle exec ruby spec/rails_helper.rb
           bin/rails db:migrate
           bundle exec rspec spec/system
