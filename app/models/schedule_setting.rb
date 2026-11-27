@@ -6,6 +6,21 @@ class ScheduleSetting < ApplicationRecord
   validate :minute_precision
   validate :end_time_after_start_time
 
+  def available_minutes
+    (end_time.hour * 60 + end_time.min) - (start_time.hour * 60 + start_time.min)
+  end
+
+  def time_breakdown(total_planned_minutes)
+    available = available_minutes
+    remaining = available - total_planned_minutes
+
+    {
+      available_minutes: available,
+      free_minutes: [ remaining, 0 ].max,
+      overflow_minutes: [ -remaining, 0 ].max
+    }
+  end
+
   private
 
   def minute_precision

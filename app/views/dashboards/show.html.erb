@@ -11,6 +11,19 @@
   <p>時間枠が未設定です。<%= link_to "時間枠を設定する", edit_schedule_setting_path %></p>
 <% end %>
 
+<dl>
+  <dt>予定合計時間</dt>
+  <dd><%= @total_planned_minutes %>分</dd>
+  <% if @time_breakdown %>
+    <dt>利用可能時間</dt>
+    <dd><%= @time_breakdown.fetch(:available_minutes) %>分</dd>
+    <dt>自由時間</dt>
+    <dd><%= @time_breakdown.fetch(:free_minutes) %>分</dd>
+    <dt>超過時間</dt>
+    <dd><%= @time_breakdown.fetch(:overflow_minutes) %>分</dd>
+  <% end %>
+</dl>
+
 <% if @tasks.empty? %>
   <p>タスクはまだありません。</p>
 <% else %>
