@@ -24,21 +24,31 @@
   <% end %>
 </dl>
 
-<% if @tasks.empty? %>
-  <p>タスクはまだありません。</p>
-<% else %>
-  <ol>
-    <% @tasks.each_with_index do |task, index| %>
-      <li>
-        <%= task.name %>（<%= task.planned_duration %>分）
-        <%= button_to "上へ", reorder_task_path(task), method: :patch,
-          params: { direction: "up" }, disabled: index.zero? %>
-        <%= button_to "下へ", reorder_task_path(task), method: :patch,
-          params: { direction: "down" }, disabled: index == @tasks.length - 1 %>
-        <%= link_to "編集", edit_task_path(task) %>
-      </li>
-    <% end %>
-  </ol>
+<% if @time_breakdown %>
+  <%= render "timeline",
+    schedule_setting: @schedule_setting,
+    available_minutes: @time_breakdown.fetch(:available_minutes),
+    tasks: @tasks %>
 <% end %>
+
+<section aria-labelledby="task-list-heading">
+  <h2 id="task-list-heading">タスク一覧</h2>
+  <% if @tasks.empty? %>
+    <p>タスクはまだありません。</p>
+  <% else %>
+    <ol>
+      <% @tasks.each_with_index do |task, index| %>
+        <li>
+          <%= task.name %>（<%= task.planned_duration %>分）
+          <%= button_to "上へ", reorder_task_path(task), method: :patch,
+            params: { direction: "up" }, disabled: index.zero? %>
+          <%= button_to "下へ", reorder_task_path(task), method: :patch,
+            params: { direction: "down" }, disabled: index == @tasks.length - 1 %>
+          <%= link_to "編集", edit_task_path(task) %>
+        </li>
+      <% end %>
+    </ol>
+  <% end %>
+</section>
 
 <%= button_to "ログアウト", session_path, method: :delete %>
