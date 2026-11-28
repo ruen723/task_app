@@ -44,6 +44,7 @@ RSpec.describe "ダッシュボード" do
       follow_redirect!
       expect(displayed_minutes).to eq("予定合計時間" => "10分")
       expect(Nokogiri::HTML(response.body).at_css(".timeline")).to be_nil
+      expect(response.body).not_to include("timeline-status")
     end
 
     it "本人のタスクだけを実行順序で表示し、編集と時間枠変更へ案内する" do
@@ -79,32 +80,49 @@ RSpec.describe "ダッシュボード" do
       post schedule_setting_path, params: { schedule_setting: { start_time: "07:00", end_time: "08:00" } }
       follow_redirect!
       expect(displayed_minutes).to eq(
-        "予定合計時間" => "0分", "利用可能時間" => "60分", "自由時間" => "60分", "超過時間" => "0分"
+        "予定合計時間" => "0分", "利用可能時間" => "60分", "自由時間" => "未計画", "超過時間" => "0分"
       )
       page = Nokogiri::HTML(response.body)
       expect(page.at_css(".timeline-frame")["style"]).to eq("--minutes: 60")
       expect(page.css(".timeline-block")).to be_empty
+      expect(page.css(".timeline-free, .timeline-overflow, .timeline-status")).to be_empty
+      expect(page.at_css(".timeline-frame .timeline-empty")&.text).to eq("やることを登録しよう")
 
       post tasks_path, params: { task: { name: "朝食", planned_duration: "45" } }
       follow_redirect!
       expect(displayed_minutes).to include("予定合計時間" => "45分", "自由時間" => "15分")
-      expect(Nokogiri::HTML(response.body).at_css(".timeline-block")["style"]).to eq("--minutes: 45")
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css(".timeline-block")["style"]).to eq("--minutes: 45")
+      expect(page.at_css(".timeline-free")["style"]).to eq("--minutes: 15")
+      expect(page.at_css(".timeline-scroll + .timeline-status")&.text).to eq("自由時間：15分")
+      expect(page.css(".timeline-overflow, .timeline-empty")).to be_empty
 
       task = user.tasks.sole
       patch task_path(task), params: { task: { planned_duration: "61" } }
       follow_redirect!
       expect(displayed_minutes).to include("予定合計時間" => "61分", "自由時間" => "0分", "超過時間" => "1分")
-      expect(Nokogiri::HTML(response.body).at_css(".timeline-block")["style"]).to eq("--minutes: 61")
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css(".timeline-block")["style"]).to eq("--minutes: 61")
+      expect(page.at_css(".timeline-overflow")["style"]).to eq("--minutes: 1")
+      expect(page.at_css(".timeline-scroll + .timeline-status-overflow")&.text).to eq("予定時間オーバー：1分")
+      expect(page.at_css(".timeline-free")).to be_nil
 
       patch schedule_setting_path, params: { schedule_setting: { start_time: "07:00", end_time: "08:01" } }
       follow_redirect!
       expect(displayed_minutes).to include("利用可能時間" => "61分", "自由時間" => "0分", "超過時間" => "0分")
-      expect(Nokogiri::HTML(response.body).at_css(".timeline-frame")["style"]).to eq("--minutes: 61")
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css(".timeline-frame")["style"]).to eq("--minutes: 61")
+      expect(page.css(".timeline-free, .timeline-overflow")).to be_empty
+      expect(page.at_css(".timeline-scroll + .timeline-status")&.text).to eq("自由時間：0分")
 
       delete task_path(task)
       follow_redirect!
-      expect(displayed_minutes).to include("予定合計時間" => "0分", "自由時間" => "61分", "超過時間" => "0分")
-      expect(Nokogiri::HTML(response.body).css(".timeline-block")).to be_empty
+      expect(displayed_minutes).to include("予定合計時間" => "0分", "自由時間" => "未計画", "超過時間" => "0分")
+      page = Nokogiri::HTML(response.body)
+      expect(page.css(".timeline-block")).to be_empty
+      expect(page.at_css(".timeline-frame")["style"]).to eq("--minutes: 61")
+      expect(page.css(".timeline-free, .timeline-overflow, .timeline-status")).to be_empty
+      expect(page.at_css(".timeline-frame .timeline-empty")&.text).to eq("やることを登録しよう")
     end
   end
 end
