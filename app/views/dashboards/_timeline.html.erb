@@ -1,6 +1,8 @@
 <% start_label = schedule_setting.start_time.strftime("%H:%M") %>
 <% end_label = schedule_setting.end_time.strftime("%H:%M") %>
 
+<% no_tasks = tasks.empty? %>
+
 <section class="timeline-section" aria-labelledby="timeline-heading">
   <h2 id="timeline-heading">時間の見える化（予定）</h2>
   <p>開始 <time><%= start_label %></time> 〜 終了 <time><%= end_label %></time></p>
@@ -10,15 +12,33 @@
       <div class="timeline-frame" style="--minutes: <%= available_minutes %>">
         <span class="timeline-time timeline-time-start"><%= start_label %></span>
         <span class="timeline-time timeline-time-end"><%= end_label %></span>
+        <% if no_tasks %>
+          <span class="timeline-label timeline-empty">やることを登録しよう</span>
+        <% elsif overflow_minutes.positive? %>
+          <div class="timeline-overflow" style="--minutes: <%= overflow_minutes %>"></div>
+        <% end %>
       </div>
 
-      <ol class="timeline-blocks">
-        <% tasks.each do |task| %>
-          <li class="timeline-block" style="--minutes: <%= task.planned_duration %>">
-            <span class="timeline-label"><%= task.name %>（<%= task.planned_duration %>分）</span>
-          </li>
+      <div class="timeline-plan">
+        <ol class="timeline-blocks">
+          <% tasks.each do |task| %>
+            <li class="timeline-block" style="--minutes: <%= task.planned_duration %>">
+              <span class="timeline-label"><%= task.name %>（<%= task.planned_duration %>分）</span>
+            </li>
+          <% end %>
+        </ol>
+        <% if !no_tasks && free_minutes.positive? %>
+          <div class="timeline-free" style="--minutes: <%= free_minutes %>">
+            <span class="timeline-label">自由時間（<%= free_minutes %>分）</span>
+          </div>
         <% end %>
-      </ol>
+      </div>
     </div>
   </div>
+
+  <% if overflow_minutes.positive? %>
+    <p class="timeline-status timeline-status-overflow">予定時間オーバー：<%= overflow_minutes %>分</p>
+  <% elsif !no_tasks %>
+    <p class="timeline-status">自由時間：<%= free_minutes %>分</p>
+  <% end %>
 </section>
