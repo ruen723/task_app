@@ -1,0 +1,24 @@
+<% start_label = schedule_setting.start_time.strftime("%H:%M") %>
+<% end_label = schedule_setting.end_time.strftime("%H:%M") %>
+
+<section class="timeline-section" aria-labelledby="timeline-heading">
+  <h2 id="timeline-heading">時間の見える化（予定）</h2>
+  <p>開始 <time><%= start_label %></time> 〜 終了 <time><%= end_label %></time></p>
+
+  <div class="timeline-scroll" tabindex="0" role="region" aria-label="予定の時間枠とタスク">
+    <div class="timeline" aria-hidden="true">
+      <div class="timeline-frame" style="--minutes: <%= available_minutes %>">
+        <span class="timeline-time timeline-time-start"><%= start_label %></span>
+        <span class="timeline-time timeline-time-end"><%= end_label %></span>
+      </div>
+
+      <ol class="timeline-blocks">
+        <% tasks.each do |task| %>
+          <li class="timeline-block" style="--minutes: <%= task.planned_duration %>">
+            <span class="timeline-label"><%= task.name %>（<%= task.planned_duration %>分）</span>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+  </div>
+</section>

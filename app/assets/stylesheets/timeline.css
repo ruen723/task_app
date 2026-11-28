@@ -1,0 +1,87 @@
+.timeline-section .timeline-scroll {
+  max-block-size: 65vh;
+  overflow-y: auto;
+}
+
+.timeline-section .timeline {
+  --minute-height: 3px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding-block: 0.75rem;
+  padding-inline-start: 4em;
+}
+
+.timeline-section .timeline-frame,
+.timeline-section .timeline-blocks {
+  grid-area: 1 / 1;
+  align-self: start;
+}
+
+.timeline-section .timeline-frame,
+.timeline-section .timeline-block {
+  box-sizing: border-box;
+  block-size: calc(var(--minutes) * var(--minute-height));
+  container-type: size;
+}
+
+.timeline-section .timeline-frame {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px #374151;
+}
+
+.timeline-section .timeline-time {
+  display: none;
+  position: absolute;
+  inset-inline-end: calc(100% + 0.5em);
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.timeline-section .timeline-time-start {
+  inset-block-start: 0;
+  transform: translateY(-50%);
+}
+
+.timeline-section .timeline-time-end {
+  inset-block-end: 0;
+  transform: translateY(50%);
+}
+
+.timeline-section .timeline-blocks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-section .timeline-block {
+  overflow: hidden;
+  background: #dbeafe;
+  box-shadow: inset 0 -1px #64748b;
+}
+
+.timeline-section .timeline-block:nth-child(even) {
+  background: #dcfce7;
+}
+
+.timeline-section .timeline-label {
+  display: none;
+  padding-inline: 0.5em;
+  overflow: hidden;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@container (min-height: 1.5em) {
+  .timeline-section .timeline-label {
+    display: block;
+  }
+}
+
+@container (min-height: 2em) {
+  .timeline-section .timeline-time {
+    display: block;
+  }
+}
